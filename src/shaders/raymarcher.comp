@@ -1,0 +1,44 @@
+#version 430 core
+
+layout(local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
+
+layout(rgba32f, binding = 0) uniform image2D ImageOut;
+
+uniform int WIDTH;
+uniform int HEIGHT;
+uniform mat4 invProjection;
+uniform mat4 View;
+uniform vec3 CameraPos;
+
+const float infinity = 1.0 / 0.0;
+const float pi = 3.1415926535897932385;
+const float tau = 6.2831853071795864769;
+
+ivec2 PixelCoords = ivec2(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y);
+
+struct Ray {
+    vec3 Origin;
+    vec3 Direction;
+};
+
+Ray getRay(vec2 pixelCoords) {
+    vec4 NDCoords = vec4(((float(pixelCoords.x) + 0.5) / float(WIDTH)) * 2.0 - 1.0, 1.0 - ((float(pixelCoords.y) + 0.5) / float(HEIGHT)) * 2.0, -1.0, 1.0);
+
+    vec4 Result = invProjection * NDCoords;
+    Result = vec4(Result.xyz / Result.w, 1.0);
+
+    Result = inverse(View) * Result;
+    Result = vec4(Result.xyz / Result.w, 1.0);
+
+    Ray r;
+    r.Origin = CameraPos;
+    r.Direction = normalize(Result.xyz - CameraPos);
+
+    return r;
+}
+
+void main () {
+    Ray origRay = getRay(PixelCoords);
+    vec3 FinalColour = vec3(origRay.Direction);
+    imageStore(ImageOut, PixelCoords, vec4(FinalColour, 1.0));
+}
