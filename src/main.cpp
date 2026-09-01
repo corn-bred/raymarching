@@ -187,10 +187,10 @@ int main() {
 
         glBindImageTexture(0, OutputTexture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
 
-        Raymarcher.setInt("Width", WIDTH);
-        Raymarcher.setInt("Height", HEIGHT);
+        Raymarcher.setInt("WIDTH", WIDTH);
+        Raymarcher.setInt("HEIGHT", HEIGHT);
         Raymarcher.setMat4("invProjection", glm::inverse(projection));
-        Raymarcher.setMat4("View", view);
+        Raymarcher.setMat4("invView", glm::inverse(view));
         Raymarcher.setVec3("CameraPos", CameraMain.position);
 
         Raymarcher.use((WIDTH + 15) / 16, (HEIGHT + 15) / 16, 1, GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);

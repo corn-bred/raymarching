@@ -7,7 +7,7 @@ layout(rgba32f, binding = 0) uniform image2D ImageOut;
 uniform int WIDTH;
 uniform int HEIGHT;
 uniform mat4 invProjection;
-uniform mat4 View;
+uniform mat4 invView;
 uniform vec3 CameraPos;
 
 const float infinity = 1.0 / 0.0;
@@ -22,19 +22,18 @@ struct Ray {
 };
 
 Ray getRay(vec2 pixelCoords) {
-    vec4 NDCoords = vec4(((float(pixelCoords.x) + 0.5) / float(WIDTH)) * 2.0 - 1.0, 1.0 - ((float(pixelCoords.y) + 0.5) / float(HEIGHT)) * 2.0, -1.0, 1.0);
+    vec4 NDCoords = vec4((pixelCoords + 0.5) / vec2(WIDTH, HEIGHT) * 2 - 1.0, -1.0, 1.0);
 
     vec4 Result = invProjection * NDCoords;
     Result = vec4(Result.xyz / Result.w, 1.0);
 
-    Result = inverse(View) * Result;
-    Result = vec4(Result.xyz / Result.w, 1.0);
+    Result = normalize(invView * vec4(Result.xyz, 0.0));
 
-    Ray r;
-    r.Origin = CameraPos;
-    r.Direction = normalize(Result.xyz - CameraPos);
+    Ray ray;
+    ray.Origin = CameraPos;
+    ray.Direction = vec3(Result.xyz);
 
-    return r;
+    return ray;
 }
 
 void main () {
