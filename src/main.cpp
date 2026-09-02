@@ -192,6 +192,10 @@ int main() {
         Raymarcher.setMat4("invProjection", glm::inverse(projection));
         Raymarcher.setMat4("invView", glm::inverse(view));
         Raymarcher.setVec3("CameraPos", CameraMain.position);
+        
+        Raymarcher.setInt("tempobj.ObjectType", 1);
+        Raymarcher.setVec3("tempobj.Position", glm::vec3(0.0));
+        Raymarcher.setFloat("tempobj.Radius", 1.0);
 
         Raymarcher.use((WIDTH + 15) / 16, (HEIGHT + 15) / 16, 1, GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 

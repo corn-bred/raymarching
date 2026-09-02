@@ -13,6 +13,7 @@ uniform vec3 CameraPos;
 const float infinity = 1.0 / 0.0;
 const float pi = 3.1415926535897932385;
 const float tau = 6.2831853071795864769;
+const float EPSILON = 0.001;
 
 ivec2 PixelCoords = ivec2(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y);
 
@@ -21,23 +22,40 @@ struct Ray {
     vec3 Direction;
 };
 
+vec3 RayAt(inout Ray ray, float t) {
+    return ray.Origin + ray.Direction * vec3(t);
+}
+
 struct SDFObject {
     int ObjectType;
     vec3 Position;
     float Radius;
 };
+uniform SDFObject tempobj;
 
 float SDFSphereDistance(SDFObject object, Ray ray) {
-    return distance(ray.Origin - object.Position) - object.Radius;
+    return distance(ray.Origin, object.Position) - object.Radius;
 }
 
 float GetSDFDistance(SDFObject object, Ray ray) {
-    if (ObjectType == 1)
+    if (object.ObjectType == 1)
         return SDFSphereDistance(object, ray);
     else return 0;
 }
 
-vec3 RayColour(Ray ray)
+vec3 RayColour(Ray ray) {
+    for (int i = 0; i < 100; i++) {
+        float t = GetSDFDistance(tempobj, ray);
+
+        if (t < EPSILON) {
+            vec3 Normal = ray.Origin - tempobj.Radius;
+            return vec3(1.0);
+        }
+
+        ray.Origin = RayAt(ray, t);
+    }
+    return vec3(0.0);
+}
 
 Ray getRay(vec2 pixelCoords) {
     vec4 NDCoords = vec4((pixelCoords + 0.5) / vec2(WIDTH, HEIGHT) * 2 - 1.0, -1.0, 1.0);
@@ -56,6 +74,6 @@ Ray getRay(vec2 pixelCoords) {
 
 void main () {
     Ray origRay = getRay(PixelCoords);
-    vec3 FinalColour = vec3(origRay.Direction);
+    vec3 FinalColour = RayColour(origRay);
     imageStore(ImageOut, PixelCoords, vec4(FinalColour, 1.0));
 }
