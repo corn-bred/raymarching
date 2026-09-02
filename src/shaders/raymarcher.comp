@@ -21,6 +21,24 @@ struct Ray {
     vec3 Direction;
 };
 
+struct SDFObject {
+    int ObjectType;
+    vec3 Position;
+    float Radius;
+};
+
+float SDFSphereDistance(SDFObject object, Ray ray) {
+    return distance(ray.Origin - object.Position) - object.Radius;
+}
+
+float GetSDFDistance(SDFObject object, Ray ray) {
+    if (ObjectType == 1)
+        return SDFSphereDistance(object, ray);
+    else return 0;
+}
+
+vec3 RayColour(Ray ray)
+
 Ray getRay(vec2 pixelCoords) {
     vec4 NDCoords = vec4((pixelCoords + 0.5) / vec2(WIDTH, HEIGHT) * 2 - 1.0, -1.0, 1.0);
 
