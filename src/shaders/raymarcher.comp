@@ -29,9 +29,13 @@ vec3 RayAt(inout Ray ray, float t) {
 struct SDFObject {
     int ObjectType;
     vec3 Position;
+    float padding0;
     float Radius;
 };
-uniform SDFObject tempobj;
+layout(std430, binding = 0) readonly buffer Objects {
+    SDFObject SDFObjects[];
+};
+uniform int SDFObjectsSize;
 
 float SDFSphereDistance(SDFObject object, Ray ray) {
     return distance(ray.Origin, object.Position) - object.Radius;
@@ -44,14 +48,24 @@ float GetSDFDistance(SDFObject object, Ray ray) {
 }
 
 vec3 RayColour(Ray ray) {
-    for (int i = 0; i < 100; i++) {
-        float t = GetSDFDistance(tempobj, ray);
+    const int MaxDepth = 64;
+    for (int i = 0; i < MaxDepth; i++) {
+        float t;
+        for (int i = 0; i < 1; i++) {
+            SDFObject currObject = SDFObjects[0];
+            //eladesceelasobenobaileevanwashere
+            if (i == 0) {
+                t = GetSDFDistance(currObject, ray);
+            } else {
+                t = min(GetSDFDistance(currObject, ray), t);
+            }
+            
 
-        if (t < EPSILON) {
-            vec3 Normal = normalize(ray.Origin - tempobj.Position);
-            return Normal;
+            if (t < EPSILON) {
+                vec3 Normal = normalize(ray.Origin - currObject.Position);
+                return Normal;
+            }
         }
-
         ray.Origin = RayAt(ray, t);
     }
     return vec3(0.0);

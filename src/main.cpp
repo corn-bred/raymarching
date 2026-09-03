@@ -10,6 +10,7 @@
 #include <cornbreadlib/computeshader.h>
 #include <cornbreadlib/shaders.h>
 #include <cornbreadlib/vertexbuffer.h>
+#include <cornbreadlib/SSBO.h>
 
 using namespace std;
 
@@ -20,6 +21,13 @@ float FOV = 100.0;
 float DeltaTime, LastFrame;
 unsigned int FPSCounter, ShownFPS;
 int FrameIndex = 0;
+
+struct SDFObject {
+    int ObjectType;
+    glm::vec3 Position;
+    float padding0;
+    float Radius;
+};
 
 float quadVertices[] = {  
     -1.0f,  1.0f,  0.0f, 1.0f,
@@ -150,6 +158,12 @@ int main() {
 
     ComputeShader Raymarcher("src/shaders/raymarcher.comp");
 
+    vector<SDFObject> StoredObjects;
+    StoredObjects.push_back(SDFObject{1, glm::vec3(0.0), -1, 0.0});
+    //StoredObjects.push_back(SDFObject{1, glm::vec3(0.0, -10.0, 0.0), -1, 9.0});
+
+    ShaderStorageBuffer SDFObjects(StoredObjects.data(), StoredObjects.size() * sizeof(SDFObject), GL_STATIC_DRAW);
+
     Shader ViewportRenderer("src/shaders/sample.vert", "src/shaders/sample.frag");
 
     VertexBuffer vboQuad(&quadVertices, sizeof(quadVertices), GL_STATIC_DRAW);
@@ -184,6 +198,10 @@ int main() {
         glm::mat4 view = CameraMain.calculateView();
 
         Raymarcher.bind();
+
+        SDFObjects.bindToShader(0);
+
+        Raymarcher.setInt("SDFObjectsSize", StoredObjects.size());
 
         glBindImageTexture(0, OutputTexture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
 
