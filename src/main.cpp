@@ -91,6 +91,14 @@ float LastX = -1.0, LastY = -1.0;
 int MouseLastFrameClicked;
 
 void mouseCallback(GLFWwindow *window, double xpos, double ypos) {
+    
+    ImGuiIO& io = ImGui::GetIO();
+    if (io.WantCaptureMouse) {
+        LastX = xpos;
+        LastY = ypos;
+        return;
+    }
+
     float xoffset = 0;
     float yoffset = 0;
 
@@ -103,10 +111,10 @@ void mouseCallback(GLFWwindow *window, double xpos, double ypos) {
     LastY = ypos;
     if (MouseLastFrameClicked == GLFW_PRESS)
         CameraMain.mouseprocess(xoffset, yoffset, GL_TRUE);
-        
+
     FrameIndex = 0;
 
-    MouseLastFrameClicked = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
+    MouseLastFrameClicked = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT);
 }
 
 void scrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
@@ -250,12 +258,34 @@ int main() {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        ImGui::Begin("Test test");
+        ImGui::Begin("SDF Object Properties");
+
+        if(ImGui::CollapsingHeader("StoredObjects[0]")) {
+            ImGui::PushID(0);
+
+            ImGui::DragFloat3("Position", &StoredObjects[0].Position.x, 0.1f, -10.0f, 10.0f);
+            ImGui::DragFloat("Radius", &StoredObjects[0].Radius, 0.1f, 0.0f, 10.0f);
+            ImGui::SliderFloat3("Albedo", &StoredObjects[0].Albedo.x, 0.0f, 1.0f);
+
+            ImGui::PopID();
+        }
+
+        if(ImGui::CollapsingHeader("StoredObjects[1]")) {
+            ImGui::PushID(1);
+
+            ImGui::DragFloat3("Position", &StoredObjects[1].Position.x, 0.1f, -10.0f, 10.0f);
+            ImGui::DragFloat("Radius", &StoredObjects[1].Radius, 0.1f, 0.0f, 10.0f);
+            ImGui::SliderFloat3("Albedo", &StoredObjects[1].Albedo.x, 0.0f, 1.0f);
+
+            ImGui::PopID();
+        }
 
         ImGui::End();
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+        SDFObjects.updateData(StoredObjects.data(), sizeof(SDFObject) * StoredObjects.size());
 
         glfwSwapBuffers(window);
         
