@@ -22,11 +22,11 @@ float DeltaTime, LastFrame;
 unsigned int FPSCounter, ShownFPS;
 int FrameIndex = 0;
 
-struct SDFObject {
-    int ObjectType;
+struct alignas(16) SDFObject {
     glm::vec3 Position;
-    float padding0;
     float Radius;
+    int ObjectType;
+    float padding0;
 };
 
 float quadVertices[] = {  
@@ -159,8 +159,8 @@ int main() {
     ComputeShader Raymarcher("src/shaders/raymarcher.comp");
 
     vector<SDFObject> StoredObjects;
-    StoredObjects.push_back(SDFObject{1, glm::vec3(0.0), -1, 0.0});
-    //StoredObjects.push_back(SDFObject{1, glm::vec3(0.0, -10.0, 0.0), -1, 9.0});
+    StoredObjects.push_back(SDFObject{glm::vec3(0.0), 1.0 , 1, 0});
+    StoredObjects.push_back(SDFObject{glm::vec3(0.0, -10.0, 0.0), 9.0, 1, 0});
 
     ShaderStorageBuffer SDFObjects(StoredObjects.data(), StoredObjects.size() * sizeof(SDFObject), GL_STATIC_DRAW);
 
@@ -210,10 +210,6 @@ int main() {
         Raymarcher.setMat4("invProjection", glm::inverse(projection));
         Raymarcher.setMat4("invView", glm::inverse(view));
         Raymarcher.setVec3("CameraPos", CameraMain.position);
-        
-        Raymarcher.setInt("tempobj.ObjectType", 1);
-        Raymarcher.setVec3("tempobj.Position", glm::vec3(0.0));
-        Raymarcher.setFloat("tempobj.Radius", 1.0);
 
         Raymarcher.use((WIDTH + 15) / 16, (HEIGHT + 15) / 16, 1, GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 
