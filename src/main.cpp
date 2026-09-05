@@ -12,6 +12,10 @@
 #include <cornbreadlib/vertexbuffer.h>
 #include <cornbreadlib/SSBO.h>
 
+#include "imgui.h"
+#include "backends/imgui_impl_glfw.h"
+#include "backends/imgui_impl_opengl3.h"
+
 using namespace std;
 
 double AspectRatio = 16.0/9.0;
@@ -23,10 +27,11 @@ unsigned int FPSCounter, ShownFPS;
 int FrameIndex = 0;
 
 struct alignas(16) SDFObject {
-    glm::vec3 Position;
+    alignas(16) glm::vec4 Position;
     float Radius;
     int ObjectType;
     float padding0;
+    alignas(16) glm::vec4 Albedo;
 };
 
 float quadVertices[] = {  
@@ -83,19 +88,25 @@ void processInput(GLFWwindow *window, Camera &camera) { //Spaghetti code GO
 
 float LastX = -1.0, LastY = -1.0;
 
+int MouseLastFrameClicked;
+
 void mouseCallback(GLFWwindow *window, double xpos, double ypos) {
     float xoffset = 0;
     float yoffset = 0;
-    if (LastX != -1.0 && LastY != -1.0) {
+
+    if ((LastX != -1.0 && LastY != -1.0)) {
         xoffset = xpos - LastX;
         yoffset = LastY - ypos;
     }
     
     LastX = xpos;
     LastY = ypos;
-    
-    CameraMain.mouseprocess(xoffset, yoffset, GL_TRUE);
+    if (MouseLastFrameClicked == GLFW_PRESS)
+        CameraMain.mouseprocess(xoffset, yoffset, GL_TRUE);
+        
     FrameIndex = 0;
+
+    MouseLastFrameClicked = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
 }
 
 void scrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
@@ -134,7 +145,7 @@ int main() {
 
     glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
 
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);  
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);  
     glfwSetCursorPosCallback(window, mouseCallback);
     CameraMain.mouseprocess(0, 0, GL_TRUE);
 
@@ -145,6 +156,14 @@ int main() {
         glfwTerminate();
         return 1;
     }
+
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Optional
+
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init("#version 430 core");
 
     GLuint OutputTexture;
 
@@ -159,8 +178,8 @@ int main() {
     ComputeShader Raymarcher("src/shaders/raymarcher.comp");
 
     vector<SDFObject> StoredObjects;
-    StoredObjects.push_back(SDFObject{glm::vec3(0.0), 1.0 , 1, 0});
-    StoredObjects.push_back(SDFObject{glm::vec3(0.0, -10.0, 0.0), 9.0, 1, 0});
+    StoredObjects.push_back(SDFObject{glm::vec4(0.0), 1.0 , 1, 0, glm::vec4(1.0, 0.0, 0.0, 1.0)});
+    StoredObjects.push_back(SDFObject{glm::vec4(0.0, -10.0, 0.0, 1.0), 9.0, 1, 0, glm::vec4(0.0, 1.0, 0.0, 1.0)});
 
     ShaderStorageBuffer SDFObjects(StoredObjects.data(), StoredObjects.size() * sizeof(SDFObject), GL_STATIC_DRAW);
 
@@ -226,6 +245,17 @@ int main() {
         vboQuad.bind();
 
         glDrawArrays(GL_TRIANGLES, 0, 6);
+
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        ImGui::Begin("Test test");
+
+        ImGui::End();
+
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         glfwSwapBuffers(window);
         

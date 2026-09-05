@@ -27,18 +27,21 @@ vec3 RayAt(inout Ray ray, float t) {
 }
 
 struct SDFObject {
-    vec3 Position;
+    vec4 Position;
     float Radius;
     int ObjectType;
     float padding0;
+    vec4 Albedo;
 };
+
 layout(std430, binding = 0) readonly buffer Objects {
     SDFObject SDFObjects[];
 };
+
 uniform int SDFObjectsSize;
 
 float SDFSphereDistance(SDFObject object, Ray ray) {
-    return distance(ray.Origin, object.Position) - object.Radius;
+    return distance(ray.Origin, object.Position.xyz) - object.Radius;
 }
 
 float GetSDFDistance(SDFObject object, Ray ray) {
@@ -48,18 +51,37 @@ float GetSDFDistance(SDFObject object, Ray ray) {
 }
 
 vec3 RayColour(Ray ray) {
-    const int MaxDepth = 64;
+    const int MaxDepth = 200;
     for (int i = 0; i < MaxDepth; i++) {
+        SDFObject CollidedObject;
         float t = infinity;
+
         for (int j = 0; j < SDFObjectsSize; j++) {
-            SDFObject currObject = SDFObjects[j];
+            SDFObject CurrObject = SDFObjects[j];
             //eladesceelasobenobaileevanwashere
-            t = min(GetSDFDistance(currObject, ray), t);
+            float tCandidate = GetSDFDistance(CurrObject, ray);
+
+            if (tCandidate < t) {
+                CollidedObject = CurrObject;
+                t = tCandidate;
+            }
         }
-        if (t < EPSILON) {
-            return vec3(1.0);
-        }
+
         ray.Origin = RayAt(ray, t);
+
+        if (t < EPSILON) {
+            vec3 Normal = normalize(ray.Origin - CollidedObject.Position.xyz);
+            vec3 SkyDir = vec3(0.0, 1.0, 0.0);
+
+            vec3 ObjectAlbedo = CollidedObject.Albedo.rgb;
+
+            vec3 Diffuse = max(vec3(dot(SkyDir, Normal)), 0.0) * ObjectAlbedo;
+            vec3 Ambient = 0.1 * ObjectAlbedo;
+
+            vec3 FinalColour = Diffuse + Ambient;
+
+            return FinalColour;
+        }
     }
     return vec3(0.0);
 }
