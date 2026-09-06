@@ -24,7 +24,7 @@ unsigned int HEIGHT = float(WIDTH) / AspectRatio;
 float FOV = 100.0;
 float DeltaTime, LastFrame;
 unsigned int FPSCounter, ShownFPS;
-int FrameIndex = 0;
+float Smoothness = 0.0;
 
 struct alignas(16) SDFObject {
     alignas(16) glm::vec4 Position;
@@ -56,32 +56,25 @@ void processInput(GLFWwindow *window, Camera &camera) { //Spaghetti code GO
     const float cameraSpeed = 2.5f;
     if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, GLFW_TRUE);
-        FrameIndex = 0;
     }
     bool movements[6] = {false}; //W:0 S:1 A:2 D:3 SPACE:4 CONTROL:5
     if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
         movements[0] = true;
-        FrameIndex = 0;
     }
     if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
         movements[1] = true;
-        FrameIndex = 0;
     }
     if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
         movements[2] = true;
-        FrameIndex = 0;
     }
     if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
         movements[3] = true;
-        FrameIndex = 0;
     }
     if(glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
         movements[4] = true;
-        FrameIndex = 0;
     }
     if(glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
         movements[5] = true;
-        FrameIndex = 0;
     }
     camera.keyboardprocess(movements, DeltaTime, cameraSpeed);
 }
@@ -112,8 +105,6 @@ void mouseCallback(GLFWwindow *window, double xpos, double ypos) {
     if (MouseLastFrameClicked == GLFW_PRESS)
         CameraMain.mouseprocess(xoffset, yoffset, GL_TRUE);
 
-    FrameIndex = 0;
-
     MouseLastFrameClicked = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT);
 }
 
@@ -123,7 +114,6 @@ void scrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
         FOV = 1.0f;
     if (FOV > 170.0f)
         FOV = 170.0f;
-    FrameIndex = 0;
 }
 
 
@@ -200,7 +190,6 @@ int main() {
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
         processInput(window, CameraMain);
-        FrameIndex++;
 
         float CurrentFrame = glfwGetTime();
         DeltaTime = CurrentFrame - LastFrame;
@@ -237,6 +226,7 @@ int main() {
         Raymarcher.setMat4("invProjection", glm::inverse(projection));
         Raymarcher.setMat4("invView", glm::inverse(view));
         Raymarcher.setVec3("CameraPos", CameraMain.position);
+        Raymarcher.setFloat("Smoothness", Smoothness);
 
         Raymarcher.use((WIDTH + 15) / 16, (HEIGHT + 15) / 16, 1, GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 
@@ -258,7 +248,9 @@ int main() {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        ImGui::Begin("SDF Object Properties");
+        ImGui::Begin("Properties");
+
+        ImGui::SliderFloat("Smoothness", &Smoothness, 0.0, 10.0);
 
         if(ImGui::CollapsingHeader("StoredObjects[0]")) {
             ImGui::PushID(0);
