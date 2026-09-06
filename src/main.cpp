@@ -250,7 +250,7 @@ int main() {
 
         ImGui::Begin("Properties");
 
-        ImGui::SliderFloat("Smoothness", &Smoothness, 0.0, 10.0);
+        ImGui::SliderFloat("Smoothness", &Smoothness, 0.0, 1.0);
 
         if(ImGui::CollapsingHeader("StoredObjects[0]")) {
             ImGui::PushID(0);
