@@ -25,6 +25,7 @@ float FOV = 100.0;
 float DeltaTime, LastFrame;
 unsigned int FPSCounter, ShownFPS;
 float Smoothness = 0.0;
+float tDiscardDistance = 100.0;
 
 struct alignas(16) SDFObject {
     alignas(16) glm::vec4 Position;
@@ -228,6 +229,7 @@ int main() {
         Raymarcher.setMat4("invView", glm::inverse(view));
         Raymarcher.setVec3("CameraPos", CameraMain.position);
         Raymarcher.setFloat("Smoothness", Smoothness);
+        Raymarcher.setFloat("tDiscardDistance", tDiscardDistance);
 
         Raymarcher.use((WIDTH + 15) / 16, (HEIGHT + 15) / 16, 1, GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 
@@ -252,6 +254,7 @@ int main() {
         ImGui::Begin("Properties");
 
         ImGui::SliderFloat("Smoothness", &Smoothness, 0.0, 1.0);
+        ImGui::DragFloat("tDiscardDistance", &tDiscardDistance, 0.1f, 0.0f, 1000.0f);
 
         if(ImGui::CollapsingHeader("StoredObjects[0]")) {
             ImGui::PushID(0);

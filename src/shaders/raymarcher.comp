@@ -10,6 +10,7 @@ uniform mat4 invProjection;
 uniform mat4 invView;
 uniform vec3 CameraPos;
 uniform float Smoothness;
+uniform float tDiscardDistance;
 
 const float infinity = 1.0 / 0.0;
 const float pi = 3.1415926535897932385;
@@ -80,14 +81,14 @@ vec3 ComputeNormal(vec3 pos) {
         vec3(-e, -e, e),
         vec3(-e, e, -e),
         vec3(e, e, e)
-    }
+    };
 
     float D[4] = {
         SDFDistanceTotal(Offsets[0] + pos),
         SDFDistanceTotal(Offsets[1] + pos),
         SDFDistanceTotal(Offsets[2] + pos),
         SDFDistanceTotal(Offsets[3] + pos),
-    }
+    };
 
     return 
     normalize(
@@ -97,7 +98,7 @@ vec3 ComputeNormal(vec3 pos) {
             (D[1] + D[3]) - (D[0] + D[2]) //forward vs backward
         )
     );
-    
+
 }
 
 vec3 RayColour(Ray ray) {
@@ -110,6 +111,9 @@ vec3 RayColour(Ray ray) {
             SDFObject CurrObject = SDFObjects[j];
             //eladesceelasobenobaileevanwashere
             float tCandidate = GetSDFDistance(CurrObject, ray.Origin);
+            if (tCandidate >= tDiscardDistance) {
+                return vec3(0.0);
+            }
 
             float h = 0.0;
 
@@ -121,13 +125,13 @@ vec3 RayColour(Ray ray) {
         ray.Origin = RayAt(ray, t);
 
         if (t < EPSILON) {
-            //vec3 Normal = normalize(ray.Origin - CollidedObject.Position.xyz);
-            //vec3 SkyDir = vec3(0.0, 1.0, 0.0);
+            vec3 Normal = ComputeNormal(ray.Origin);
+            vec3 SkyDir = vec3(0.0, 1.0, 0.0);
 
-            //vec3 Diffuse = max(vec3(dot(SkyDir, Normal)), 0.0) * ObjectAlbedo;
-            vec3 Ambient = 0.5 * ObjectAlbedo;
+            vec3 Diffuse = max(vec3(dot(SkyDir, Normal)), 0.0) * ObjectAlbedo;
+            vec3 Ambient = 0.1 * ObjectAlbedo;
 
-            vec3 FinalColour = Ambient;
+            vec3 FinalColour = Ambient + Diffuse;
 
             return FinalColour;
         }
