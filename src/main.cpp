@@ -178,7 +178,7 @@ int main() {
     vector<SDFObject> StoredObjects;
     StoredObjects.push_back(SDFObject{glm::vec4(0.0), 1.0 , 1, 0, glm::vec4(1.0, 0.0, 0.0, 1.0)});
     StoredObjects.push_back(SDFObject{glm::vec4(0.0, -10.0, 0.0, 1.0), 9.0, 1, 0, glm::vec4(0.0, 1.0, 0.0, 1.0)});
-    StoredObjects.push_back(SDFObject{glm::vec4(0.0, 1.0, 0.0, 1.0), 1.75 , 1, 0, glm::vec4(0.0, 0.0, 1.0, 1.0)});
+    StoredObjects.push_back(SDFObject{glm::vec4(0.0, 1.0, 0.0, 1.0), 0.5 , 1, 0, glm::vec4(0.0, 0.0, 1.0, 1.0)});
 
     ShaderStorageBuffer SDFObjects(StoredObjects.data(), StoredObjects.size() * sizeof(SDFObject), GL_STATIC_DRAW);
 
@@ -256,8 +256,8 @@ int main() {
         if(ImGui::CollapsingHeader("StoredObjects[0]")) {
             ImGui::PushID(0);
 
-            ImGui::DragFloat3("Position", &StoredObjects[0].Position.x, 0.1f, -10.0f, 10.0f);
-            ImGui::DragFloat("Radius", &StoredObjects[0].Radius, 0.1f, 0.0f, 10.0f);
+            ImGui::DragFloat3("Position", &StoredObjects[0].Position.x, 0.03f, -10.0f, 10.0f);
+            ImGui::DragFloat("Radius", &StoredObjects[0].Radius, 0.01f, 0.0f, 10.0f);
             ImGui::SliderFloat3("Albedo", &StoredObjects[0].Albedo.x, 0.0f, 1.0f);
 
             ImGui::PopID();
@@ -266,8 +266,8 @@ int main() {
         if(ImGui::CollapsingHeader("StoredObjects[1]")) {
             ImGui::PushID(1);
 
-            ImGui::DragFloat3("Position", &StoredObjects[1].Position.x, 0.1f, -10.0f, 10.0f);
-            ImGui::DragFloat("Radius", &StoredObjects[1].Radius, 0.1f, 0.0f, 10.0f);
+            ImGui::DragFloat3("Position", &StoredObjects[1].Position.x, 0.03f, -10.0f, 10.0f);
+            ImGui::DragFloat("Radius", &StoredObjects[1].Radius, 0.01f, 0.0f, 10.0f);
             ImGui::SliderFloat3("Albedo", &StoredObjects[1].Albedo.x, 0.0f, 1.0f);
 
             ImGui::PopID();
@@ -276,8 +276,8 @@ int main() {
         if(ImGui::CollapsingHeader("StoredObjects[2]")) {
             ImGui::PushID(2);
 
-            ImGui::DragFloat3("Position", &StoredObjects[2].Position.x, 0.1f, -10.0f, 10.0f);
-            ImGui::DragFloat("Radius", &StoredObjects[2].Radius, 0.1f, 0.0f, 10.0f);
+            ImGui::DragFloat3("Position", &StoredObjects[2].Position.x, 0.03f, -10.0f, 10.0f);
+            ImGui::DragFloat("Radius", &StoredObjects[2].Radius, 0.01f, 0.0f, 10.0f);
             ImGui::SliderFloat3("Albedo", &StoredObjects[2].Albedo.x, 0.0f, 1.0f);
 
             ImGui::PopID();

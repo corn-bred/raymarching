@@ -47,14 +47,57 @@ layout(std430, binding = 0) readonly buffer Objects {
 
 uniform int SDFObjectsSize;
 
-float SDFSphereDistance(SDFObject object, Ray ray) {
-    return distance(ray.Origin, object.Position.xyz) - object.Radius;
+float SDFSphereDistance(SDFObject object, vec3 pos) {
+    return distance(pos, object.Position.xyz) - object.Radius;
 }
 
-float GetSDFDistance(SDFObject object, Ray ray) {
+float GetSDFDistance(SDFObject object, vec3 pos) {
     if (object.ObjectType == 1)
-        return SDFSphereDistance(object, ray);
+        return SDFSphereDistance(object, pos);
     else return 0;
+}
+
+float SDFDistanceTotal(vec3 pos) {
+    float t = infinity;
+
+    for (int j = 0; j < SDFObjectsSize; j++) {
+        SDFObject CurrObject = SDFObjects[j];
+        //eladesceelasobenobaileevanwashere
+        float tCandidate = GetSDFDistance(CurrObject, pos);
+
+        float h;
+
+        t = (j == 0) ? tCandidate : smin(t, tCandidate, Smoothness, h);
+    }
+    return t;
+}
+
+vec3 ComputeNormal(vec3 pos) {
+    float e = 0.5773 * EPSILON;
+
+    vec3 Offsets[4] = {
+        vec3(e, -e, -e),
+        vec3(-e, -e, e),
+        vec3(-e, e, -e),
+        vec3(e, e, e)
+    }
+
+    float D[4] = {
+        SDFDistanceTotal(Offsets[0] + pos),
+        SDFDistanceTotal(Offsets[1] + pos),
+        SDFDistanceTotal(Offsets[2] + pos),
+        SDFDistanceTotal(Offsets[3] + pos),
+    }
+
+    return 
+    normalize(
+        vec3(
+            (D[0] + D[3]) - (D[1] + D[2]), //left vs right
+            (D[2] + D[3]) - (D[0] + D[1]), //up vs down
+            (D[1] + D[3]) - (D[0] + D[2]) //forward vs backward
+        )
+    );
+    
 }
 
 vec3 RayColour(Ray ray) {
@@ -66,7 +109,7 @@ vec3 RayColour(Ray ray) {
         for (int j = 0; j < SDFObjectsSize; j++) {
             SDFObject CurrObject = SDFObjects[j];
             //eladesceelasobenobaileevanwashere
-            float tCandidate = GetSDFDistance(CurrObject, ray);
+            float tCandidate = GetSDFDistance(CurrObject, ray.Origin);
 
             float h = 0.0;
 
