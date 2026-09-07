@@ -110,6 +110,8 @@ void mouseCallback(GLFWwindow *window, double xpos, double ypos) {
 }
 
 void scrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
+    ImGuiIO& io = ImGui::GetIO();
+    if (io.WantCaptureMouse) return;
     FOV -= (float)yoffset;
     if (FOV < 1.0f)
         FOV = 1.0f;
