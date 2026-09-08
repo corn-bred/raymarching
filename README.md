@@ -1,6 +1,10 @@
 # Raymarcher
+
+Small miniproject I decided to do because it looks cool
+
 Simple raymarcher with SDFs.
 
+Example image: 
 ![raymarcher image](image.png)
 
 ## Controls
@@ -14,6 +18,8 @@ Right click to drag your camera (Euler)
 You can edit the object properties in the ImGui window
 
 ## Building
+
+You need CMake version 4.0 or higher to be able to build.
 
 ### Dynamically-Linked Libraries
 
