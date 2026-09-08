@@ -27,13 +27,14 @@ unsigned int FPSCounter, ShownFPS;
 float Smoothness = 0.0;
 float tDiscardDistance = 100.0;
 
-struct alignas(16) SDFObject {
-    alignas(16) glm::vec4 Position;
-    float Radius;
-    int ObjectType;
-    float padding0;
-    alignas(16) glm::vec4 Albedo;
-};
+struct SDFObject {
+    glm::vec4 Position; //16
+    float Radius; //20
+    int ObjectType; //24
+    float padding0[2]; //32
+    glm::vec4 Scale; //48
+    glm::vec4 Albedo; //64
+}; //64/=32
 
 float quadVertices[] = {  
     -1.0f,  1.0f,  0.0f, 1.0f,
@@ -179,9 +180,9 @@ int main() {
     ComputeShader Raymarcher("src/shaders/raymarcher.comp");
 
     vector<SDFObject> StoredObjects;
-    StoredObjects.push_back(SDFObject{glm::vec4(0.0), 1.0 , 1, 0, glm::vec4(1.0, 0.0, 0.0, 1.0)});
-    StoredObjects.push_back(SDFObject{glm::vec4(0.0, -10.0, 0.0, 1.0), 9.0, 1, 0, glm::vec4(0.0, 1.0, 0.0, 1.0)});
-    StoredObjects.push_back(SDFObject{glm::vec4(0.0, 1.0, 0.0, 1.0), 0.5 , 1, 0, glm::vec4(0.0, 0.0, 1.0, 1.0)});
+    StoredObjects.push_back(SDFObject{glm::vec4(0.0), 1.0 , 2, {0}, glm::vec4(1.0), glm::vec4(1.0, 0.0, 0.0, 1.0)});
+    StoredObjects.push_back(SDFObject{glm::vec4(0.0, -10.0, 0.0, 1.0), 9.0, 1, {0}, glm::vec4(0.0), glm::vec4(0.0, 1.0, 0.0, 1.0)});
+    StoredObjects.push_back(SDFObject{glm::vec4(0.0, 1.0, 0.0, 1.0), 0.5 , 1, {0}, glm::vec4(0.0), glm::vec4(0.0, 0.0, 1.0, 1.0)});
 
     ShaderStorageBuffer SDFObjects(StoredObjects.data(), StoredObjects.size() * sizeof(SDFObject), GL_STATIC_DRAW);
 
@@ -262,7 +263,7 @@ int main() {
             ImGui::PushID(0);
 
             ImGui::DragFloat3("Position", &StoredObjects[0].Position.x, 0.03f, -10.0f, 10.0f);
-            ImGui::DragFloat("Radius", &StoredObjects[0].Radius, 0.01f, 0.0f, 10.0f);
+            ImGui::DragFloat3("Scale", &StoredObjects[0].Scale.x, 0.01f, 0.0f, 10.0f);
             ImGui::SliderFloat3("Albedo", &StoredObjects[0].Albedo.x, 0.0f, 1.0f);
 
             ImGui::PopID();
